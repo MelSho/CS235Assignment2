@@ -39,6 +39,7 @@ def movies_by_year():
 
     movies_total = services.get_entire_movies(repo.repo_instance)
     movies = services.get_entire_movies_cut(movies_total[cursor:cursor + movies_per_page], repo.repo_instance)
+    print(movies)
 
     first_movie_url = None
     last_movie_url = None
@@ -53,16 +54,16 @@ def movies_by_year():
     if cursor + movies_per_page < len(movies_total):
         # There are further articles, so generate URLs for the 'next' and 'last' navigation buttons.
         next_movie_url = url_for('movies_bp.movies_by_year', cursor=cursor + movies_per_page)
-
         last_cursor = movies_per_page * int(len(movies_total) / movies_per_page)
         if len(movies_total) % movies_per_page == 0:
             last_cursor -= movies_per_page
         last_movie_url = url_for('movies_bp.movies_by_year', cursor=last_cursor)
-
+   
     return render_template(
         'movies/movies.html', 
         title = "Movies",
         movies = movies,
+        cursor = cursor,
         first_movies_url = first_movie_url,
         last_movies_url = last_movie_url,
         prev_movies_url = prev_movie_url,
@@ -133,10 +134,10 @@ def movies_by_genre():
         articles=movies,
         selected_articles=utilities.get_selected_movies(len(movies) * 2),
         tag_urls=utilities.get_genres_and_urls(),
-        first_article_url=first_movie_url,
-        last_article_url=last_movie_url,
-        prev_article_url=prev_movie_url,
-        next_article_url=next_movie_url,
+        first_movie_url=first_movie_url,
+        last_movie_url=last_movie_url,
+        prev_movie_url=prev_movie_url,
+        next_movie_url=next_movie_url,
         show_comments_for_article=article_to_show_comments
     )
 
