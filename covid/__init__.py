@@ -30,11 +30,9 @@ def create_app(test_config=None):
     # Build the application - these steps require an application context.
     with app.app_context():
         # Register blueprints.
-        from .home import home
-        app.register_blueprint(home.home_blueprint)
 
-        from .news import news
-        app.register_blueprint(news.news_blueprint)
+        from .news import movies
+        app.register_blueprint(movies.movies_blueprint)
 
         from .authentication import authentication
         app.register_blueprint(authentication.authentication_blueprint)

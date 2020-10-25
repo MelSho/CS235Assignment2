@@ -1,6 +1,6 @@
 import pytest
 
-from domainmodel.director import Director
+from covid.domain.model import Director
 
 @pytest.fixture
 def director():
@@ -16,3 +16,5 @@ def test_init():
     assert director2.director_full_name is None
     director3 = Director(42)
     assert director3.director_full_name is None
+
+    

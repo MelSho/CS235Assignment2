@@ -1,7 +1,7 @@
 from typing import List, Iterable
 
 from covid.adapters.repository import AbstractRepository
-from covid.domain.model import make_comment, Article, Comment, Tag
+from covid.domain.model import make_comment, Article, Comment, Tag, Movie
 
 
 class NonExistentArticleException(Exception):
@@ -37,6 +37,13 @@ def get_article(article_id: int, repo: AbstractRepository):
 
     return article_to_dict(article)
 
+def get_movie(movie_rank: int, repo: AbstractRepository):
+    movie = repo.get_movie(movie_rank)
+
+    if movie is None:
+        raise NonExistentArticleException
+
+    return movie_to_dict(movie)
 
 def get_first_article(repo: AbstractRepository):
 
@@ -44,12 +51,18 @@ def get_first_article(repo: AbstractRepository):
 
     return article_to_dict(article)
 
+def get_first_movie(repo: AbstractRepository):
+    movie = repo.get_first_movie()
+    return movie_to_dict(movie)
 
 def get_last_article(repo: AbstractRepository):
 
     article = repo.get_last_article()
     return article_to_dict(article)
 
+def get_last_movie(repo: AbstractRepository):
+    movie = repo.get_last_movie()
+    return movie_to_dict(movie)
 
 def get_articles_by_date(date, repo: AbstractRepository):
     # Returns articles for the target date (empty if no matches), the date of the previous article (might be null), the date of the next article (might be null)
@@ -68,6 +81,15 @@ def get_articles_by_date(date, repo: AbstractRepository):
 
     return articles_dto, prev_date, next_date
 
+def get_sorted_movies_by_year(year, repo: AbstractRepository):
+    movies = repo.get_sorted_movies_by_year(target_year=year)
+    movies_dto = list()
+    prev_year = next_year = None
+    if len(movies) > 0:
+        prev_year = repo.get_year_of_previous_movie(movies[0])
+        next_year = repo.get_year_of_next_movie(movies[0])
+        movies_dto = movies_to_dict(movies)
+    return movies_dto, prev_year, next_year
 
 def get_article_ids_for_tag(tag_name, repo: AbstractRepository):
     article_ids = repo.get_article_ids_for_tag(tag_name)
@@ -110,6 +132,16 @@ def article_to_dict(article: Article):
     }
     return article_dict
 
+def movie_to_dict(movie: Movie):
+    movie_dict = {
+        'rank': movie.rank,
+        'title': movie.title,
+        'year': movie.year
+    }
+    return movie_dict
+
+def movies_to_dict(movies: Iterable[Movie]):
+    return [movie_to_dict(movie) for movie in movies]
 
 def articles_to_dict(articles: Iterable[Article]):
     return [article_to_dict(article) for article in articles]
@@ -149,3 +181,7 @@ def dict_to_article(dict):
     article = Article(dict.id, dict.date, dict.title, dict.first_para, dict.hyperlink)
     # Note there's no comments or tags.
     return article
+
+def dict_to_movie(dict):
+    movie = Movie(dict.rank, dict.title, dict.year)
+    return movie

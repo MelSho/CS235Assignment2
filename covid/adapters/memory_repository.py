@@ -8,7 +8,8 @@ from bisect import bisect, bisect_left, insort_left
 from werkzeug.security import generate_password_hash
 
 from covid.adapters.repository import AbstractRepository, RepositoryException
-from covid.domain.model import Article, Tag, User, Comment, make_tag_association, make_comment
+from covid.domain.model import Article, Tag, User, Comment, make_tag_association, make_comment, Movie, Director, Actor, Genre
+
 
 
 class MemoryRepository(AbstractRepository):
@@ -20,6 +21,11 @@ class MemoryRepository(AbstractRepository):
         self._tags = list()
         self._users = list()
         self._comments = list()
+        self._movies = list()
+        self._movies_index = dict()
+        self._actors = list()
+        self._directors = list()
+        self._genres = list()
 
     def add_user(self, user: User):
         self._users.append(user)
@@ -31,6 +37,10 @@ class MemoryRepository(AbstractRepository):
         insort_left(self._articles, article)
         self._articles_index[article.id] = article
 
+    def add_movie(self, movie: Movie):
+        insort_left(self._movies, movie)
+        self._movies_index[movie.rank] = movie
+
     def get_article(self, id: int) -> Article:
         article = None
 
@@ -40,6 +50,33 @@ class MemoryRepository(AbstractRepository):
             pass  # Ignore exception and return None.
 
         return article
+
+    def get_movie(self, rank: int) -> Movie:
+        movie = None
+        try:
+            movie = self._movies_index[rank]
+        except KeyError:
+            pass
+        return movie
+
+    def get_sorted_movies_by_year(self, target_year: int) ->List[Movie]:
+        target_movie = Movie(
+            rank = None,
+            title = None,
+            year = target_year
+        )
+        matching_movies = list()
+
+        try:
+            index = self.movie_index(target_movie)
+            for movie in self._movies[index:None]:
+                if movie.year == target_year:
+                    matching_movies.append(movie)
+                else:
+                    break
+        except ValueError:
+            pass
+        return matching_movies
 
     def get_articles_by_date(self, target_date: date) -> List[Article]:
         target_article = Article(
@@ -64,8 +101,17 @@ class MemoryRepository(AbstractRepository):
 
         return matching_articles
 
+    def get_number_of_movies(self):
+        return len(self._movies)
+
     def get_number_of_articles(self):
         return len(self._articles)
+
+    def get_first_movie(self):
+        movie = None
+        if len(self._movies) > 0:
+            movie = self._movies[0]
+        return movie
 
     def get_first_article(self):
         article = None
@@ -73,6 +119,12 @@ class MemoryRepository(AbstractRepository):
         if len(self._articles) > 0:
             article = self._articles[0]
         return article
+
+    def get_last_movie(self):
+        movie = None
+        if len(self._movies) > 0:
+            movie = self._movies[-1]
+        return movie
 
     def get_last_article(self):
         article = None
@@ -102,6 +154,18 @@ class MemoryRepository(AbstractRepository):
 
         return article_ids
 
+    def get_year_of_previous_movie(self, movie: Movie):
+        previous_year = None
+        try:
+            index = self.movie_index(movie)
+            for stored_movie in reversed(self._movies[0:index]):
+                if stored_movie.year < movie.year:
+                    previous_year = stored_movie.year
+                    break
+        except ValueError:
+            pass
+        return previous_year
+
     def get_date_of_previous_article(self, article: Article):
         previous_date = None
 
@@ -116,6 +180,18 @@ class MemoryRepository(AbstractRepository):
             pass
 
         return previous_date
+
+    def get_year_of_next_movie(self, movie: Movie):
+        next_year = None
+        try:
+            index = self.movie_index(movie)
+            for stored_movie in self._movies[index + 1:len(self._movies)]:
+                if stored_movie.year > movie.year:
+                    next_year = stored_movie.year
+                    break
+        except ValueError:
+            pass
+        return next_year
 
     def get_date_of_next_article(self, article: Article):
         next_date = None
@@ -152,6 +228,21 @@ class MemoryRepository(AbstractRepository):
             return index
         raise ValueError
 
+    def movie_index(self, movie: Movie):
+        index = bisect_left(self._movies, movie)
+        if index != len(self._movies) and self._movies[index].year == movie.year:
+            return index
+        raise ValueError
+    
+    def add_actor(self, actor: Actor):
+        self._actors.append(actor)
+    
+    def add_director(self, director: Director):
+        self._directors.append(director)
+    
+    def add_genre(self, genre: Genre):
+        self._genres.append(genre)
+
 
 def read_csv_file(filename: str):
     with open(filename, encoding='utf-8-sig') as infile:
@@ -166,6 +257,51 @@ def read_csv_file(filename: str):
             row = [item.strip() for item in row]
             yield row
 
+def load_movies(data_path: str, repo: MemoryRepository):
+    dataset_of_movies: list = []
+    dataset_of_actors: set = set()
+    dataset_of_directors: set = set()
+    dataset_of_genres: set = set()
+
+    index = 0
+    for row in read_csv_file(os.path.join(data_path, 'Data1000Movies.csv')):
+        rank = row[0]
+        title = row[1]
+        year = int(row[6])
+        movie = Movie(rank, title, year)
+        dataset_of_movies.append(movie)
+        repo.add_movie(movie) #
+        actors = row[5]
+        actors = actors.split(",")
+        for x in range(0, len(actors)):
+            actors[x] = actors[x].strip()
+            if (actors[x] not in dataset_of_actors):
+                actor = Actor(actors[x])
+                dataset_of_actors.add(actor)
+                repo.add_actor(actor) #
+        directors = row[4]
+        if (directors not in dataset_of_directors):
+            director = Director(directors)
+            dataset_of_directors.add(director)
+            repo.add_director(director) #
+        genres = row[2]
+        genres = genres.split(",")
+        for x in range(0, len(genres)):
+            genres[x] = genres[x].strip()
+            if (genres[x] not in dataset_of_genres):
+                genre = Genre(genres[x])
+                dataset_of_genres.add(genre)
+                repo.add_genre(genre) #
+        #print(f"Movie {index} with title: {title}, release year {release_year}")
+        index += 1
+
+        movie = Movie(
+            rank = row[0],
+            title = row[1],
+            year = int(row[6])
+        )
+
+        repo.add_movie(movie)
 
 def load_articles_and_tags(data_path: str, repo: MemoryRepository):
     tags = dict()
@@ -238,3 +374,6 @@ def populate(data_path: str, repo: MemoryRepository):
 
     # Load comments into the repository.
     load_comments(data_path, repo, users)
+
+    # Load movies into the repository. 
+    load_movies(data_path, repo)

@@ -16,81 +16,94 @@ from covid.authentication.authentication import login_required
 
 
 # Configure Blueprint.
-news_blueprint = Blueprint(
-    'news_bp', __name__)
+movies_blueprint = Blueprint(
+    'movies_bp', __name__)
 
-
-@news_blueprint.route('/articles_by_date', methods=['GET'])
-def articles_by_date():
+@movies_blueprint.route('/', methods=['GET'])
+#@movies_blueprint.route('/movies_by_year', methods=['GET'])
+def movies_by_year():
     # Read query parameters.
-    target_date = request.args.get('date')
-    article_to_show_comments = request.args.get('view_comments_for')
+    target_year = request.args.get('year')
+    # article_to_show_comments = request.args.get('view_comments_for') #make reviews?
+
+    ordered_movies = services.get_sorted_movies_by_year(target_year, repo.repo_instance) # You need to make this
 
     # Fetch the first and last articles in the series.
-    first_article = services.get_first_article(repo.repo_instance)
-    last_article = services.get_last_article(repo.repo_instance)
+    first_movie = services.get_first_movie(repo.repo_instance)
+    last_movie = services.get_last_movie(repo.repo_instance)
 
-    if target_date is None:
+    if target_year is None:
         # No date query parameter, so return articles from day 1 of the series.
-        target_date = first_article['date']
+        #target_year = first_movie['year']
+        target_year = first_movie['year']
     else:
         # Convert target_date from string to date.
-        target_date = date.fromisoformat(target_date)
+        target_year = date.fromisoformat(target_year)
 
-    if article_to_show_comments is None:
+    #if article_to_show_comments is None:
         # No view-comments query parameter, so set to a non-existent article id.
-        article_to_show_comments = -1
-    else:
+        #article_to_show_comments = -1
+    #else:
         # Convert article_to_show_comments from string to int.
-        article_to_show_comments = int(article_to_show_comments)
+        #article_to_show_comments = int(article_to_show_comments)
 
     # Fetch article(s) for the target date. This call also returns the previous and next dates for articles immediately
     # before and after the target date.
-    articles, previous_date, next_date = services.get_articles_by_date(target_date, repo.repo_instance)
+    movies_by_year, previous_year, next_year = services.get_sorted_movies_by_year(target_year, repo.repo_instance)
 
-    first_article_url = None
-    last_article_url = None
-    next_article_url = None
-    prev_article_url = None
+    first_year_url = None
+    last_year_url = None
+    next_year_url = None
+    prev_year_url = None
 
-    if len(articles) > 0:
+    if len(movies_by_year) > 0:
         # There's at least one article for the target date.
-        if previous_date is not None:
+        if previous_year is not None:
             # There are articles on a previous date, so generate URLs for the 'previous' and 'first' navigation buttons.
-            prev_article_url = url_for('news_bp.articles_by_date', date=previous_date.isoformat())
-            first_article_url = url_for('news_bp.articles_by_date', date=first_article['date'].isoformat())
+            prev_year_url = url_for('movies_bp.movies_by_year', year = previous_year.isoformat())
+            #first_movie_url = url_for('movies_bp.movies_by_year', year=first_movie['year'].isoformat())
+            first_year_url = url_for('movies_bp.movies_by_year', year = first_movie['year'].isoformat())
 
         # There are articles on a subsequent date, so generate URLs for the 'next' and 'last' navigation buttons.
-        if next_date is not None:
-            next_article_url = url_for('news_bp.articles_by_date', date=next_date.isoformat())
-            last_article_url = url_for('news_bp.articles_by_date', date=last_article['date'].isoformat())
+        if next_year is not None:
+            next_year_url = url_for('movies_bp.movies_by_year', year = next_year)
+            #last_movie_url = url_for('movies_bp.movies_by_year', year=last_movie['year'].isoformat())
+            last_year_url = url_for('movies_bp.movies_by_year', year = last_movie['year'])
 
         # Construct urls for viewing article comments and adding comments.
-        for article in articles:
-            article['view_comment_url'] = url_for('news_bp.articles_by_date', date=target_date, view_comments_for=article['id'])
-            article['add_comment_url'] = url_for('news_bp.comment_on_article', article=article['id'])
+        #for article in articles:
+        #    article['view_comment_url'] = url_for('movies_bp.movies_by_year', date=target_date, view_comments_for=article['id'])
+        #    article['add_comment_url'] = url_for('movies_bp.comment_on_article', article=article['id'])
 
         # Generate the webpage to display the articles.
+        #return render_template(
+        #    'news/articles.html',
+        #    title='Movies',
+        #    articles_title=target_date.strftime('%A %B %e %Y'),
+        #    articles=articles,
+        #    selected_articles=utilities.get_selected_articles(len(articles) * 2),
+        #    tag_urls=utilities.get_tags_and_urls(),
+        #    first_article_url=first_article_url,
+        #    last_article_url=last_article_url,
+        #    prev_article_url=prev_article_url,
+        #    next_article_url=next_article_url,
+        #    show_comments_for_article=article_to_show_comments
+        #)
         return render_template(
-            'news/articles.html',
-            title='Articles',
-            articles_title=target_date.strftime('%A %B %e %Y'),
-            articles=articles,
-            selected_articles=utilities.get_selected_articles(len(articles) * 2),
-            tag_urls=utilities.get_tags_and_urls(),
-            first_article_url=first_article_url,
-            last_article_url=last_article_url,
-            prev_article_url=prev_article_url,
-            next_article_url=next_article_url,
-            show_comments_for_article=article_to_show_comments
-        )
+            'movies/movies.html', 
+            title = "Movies",
+            movies = movies_by_year,
+            first_movies_url = first_year_url,
+            last_movies_url = last_year_url,
+            prev_movies_url = prev_year_url,
+            next_movies_url = next_year_url,
+        ) 
 
     # No articles to show, so return the homepage.
-    return redirect(url_for('home_bp.home'))
+    return redirect(url_for('movies_bp.movies_by_year')) # This is so you redirect back to home if there are no movies for that year
 
-
-@news_blueprint.route('/articles_by_tag', methods=['GET'])
-def articles_by_tag():
+@movies_blueprint.route('/movies_by_genre', methods=['GET'])
+def movies_by_genre():
     articles_per_page = 3
 
     # Read query parameters.
@@ -125,26 +138,26 @@ def articles_by_tag():
 
     if cursor > 0:
         # There are preceding articles, so generate URLs for the 'previous' and 'first' navigation buttons.
-        prev_article_url = url_for('news_bp.articles_by_tag', tag=tag_name, cursor=cursor - articles_per_page)
-        first_article_url = url_for('news_bp.articles_by_tag', tag=tag_name)
+        prev_article_url = url_for('movies_bp.movies_by_genre', tag=tag_name, cursor=cursor - articles_per_page)
+        first_article_url = url_for('movies_bp.movies_by_genre', tag=tag_name)
 
     if cursor + articles_per_page < len(article_ids):
         # There are further articles, so generate URLs for the 'next' and 'last' navigation buttons.
-        next_article_url = url_for('news_bp.articles_by_tag', tag=tag_name, cursor=cursor + articles_per_page)
+        next_article_url = url_for('movies_bp.movies_by_genre', tag=tag_name, cursor=cursor + articles_per_page)
 
         last_cursor = articles_per_page * int(len(article_ids) / articles_per_page)
         if len(article_ids) % articles_per_page == 0:
             last_cursor -= articles_per_page
-        last_article_url = url_for('news_bp.articles_by_tag', tag=tag_name, cursor=last_cursor)
+        last_article_url = url_for('movies_bp.movies_by_genre', tag=tag_name, cursor=last_cursor)
 
     # Construct urls for viewing article comments and adding comments.
     for article in articles:
-        article['view_comment_url'] = url_for('news_bp.articles_by_tag', tag=tag_name, cursor=cursor, view_comments_for=article['id'])
-        article['add_comment_url'] = url_for('news_bp.comment_on_article', article=article['id'])
+        article['view_comment_url'] = url_for('movies_bp.movies_by_genre', tag=tag_name, cursor=cursor, view_comments_for=article['id'])
+        article['add_comment_url'] = url_for('movies_bp.comment_on_article', article=article['id'])
 
     # Generate the webpage to display the articles.
     return render_template(
-        'news/articles.html',
+        'movies/movies.html',
         title='Articles',
         articles_title='Articles tagged by ' + tag_name,
         articles=articles,
@@ -158,7 +171,7 @@ def articles_by_tag():
     )
 
 
-@news_blueprint.route('/comment', methods=['GET', 'POST'])
+@movies_blueprint.route('/comment', methods=['GET', 'POST'])
 @login_required
 def comment_on_article():
     # Obtain the username of the currently logged in user.
@@ -182,7 +195,7 @@ def comment_on_article():
 
         # Cause the web browser to display the page of all articles that have the same date as the commented article,
         # and display all comments, including the new comment.
-        return redirect(url_for('news_bp.articles_by_date', date=article['date'], view_comments_for=article_id))
+        return redirect(url_for('movies_bp.movies_by_year', date=article['date'], view_comments_for=article_id))
 
     if request.method == 'GET':
         # Request is a HTTP GET to display the form.
@@ -200,11 +213,11 @@ def comment_on_article():
     # the user to enter a comment. The generated Web page includes a form object.
     article = services.get_article(article_id, repo.repo_instance)
     return render_template(
-        'news/comment_on_article.html',
+        'movies/comment_on_article.html',
         title='Edit article',
         article=article,
         form=form,
-        handler_url=url_for('news_bp.comment_on_article'),
+        handler_url=url_for('movies_bp.comment_on_article'),
         selected_articles=utilities.get_selected_articles(),
         tag_urls=utilities.get_tags_and_urls()
     )

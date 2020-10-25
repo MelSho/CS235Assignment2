@@ -2,7 +2,7 @@ import abc
 from typing import List
 from datetime import date
 
-from covid.domain.model import User, Article, Tag, Comment
+from covid.domain.model import User, Article, Tag, Comment, Movie, Actor, Genre, Director
 
 
 repo_instance = None
@@ -130,6 +130,18 @@ class AbstractRepository(abc.ABC):
     @abc.abstractmethod
     def get_comments(self):
         """ Returns the Comments stored in the repository. """
+        raise NotImplementedError
+
+    def add_movie(self, movie: Movie):
+        raise NotImplementedError
+    
+    def add_actor(self, actor: Actor):
+        raise NotImplementedError
+    
+    def add_director(self, director: Director):
+        raise NotImplementedError
+    
+    def add_genre(self, genre: Genre):
         raise NotImplementedError
 
 

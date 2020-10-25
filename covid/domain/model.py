@@ -33,7 +33,6 @@ class User:
             return False
         return other._username == self._username
 
-
 class Comment:
     def __init__(
             self, user: User, article: 'Article', comment: str, timestamp: datetime
@@ -178,6 +177,213 @@ class Tag:
             return False
         return other._tag_name == self._tag_name
 
+class Actor:
+
+    def __init__(self, actor_full_name: str):
+        if actor_full_name == "" or type(actor_full_name) is not str:
+            self.__actor_full_name = None
+        else:
+            self.__actor_full_name = actor_full_name.strip()
+            self.__coworkers: set = set()
+
+    @property
+    def actor_full_name(self) -> str:
+        return self.__actor_full_name
+
+    def __repr__(self):
+        return f"<Actor {self.__actor_full_name}>"
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, Actor):
+            return False
+        return other.__actor_full_name == self.__actor_full_name
+
+    def __lt__(self, other):
+        return self.__actor_full_name < other.__actor_full_name
+
+    def __hash__(self):
+        return hash(self.__actor_full_name)
+
+    def add_actor_colleague(self, colleague):
+        if (colleague not in self.__coworkers):
+            self.__coworkers.add(colleague)
+    
+    def check_if_this_actor_worked_with(self, colleague):
+        if (colleague not in self.__coworkers):
+            return False
+        return True
+
+class Director:
+
+    def __init__(self, director_full_name: str):
+        if director_full_name == "" or type(director_full_name) is not str:
+            self.__director_full_name = None
+        else:
+            self.__director_full_name = director_full_name.strip()
+
+    @property
+    def director_full_name(self) -> str:
+        return self.__director_full_name
+
+    def __repr__(self):
+        return f"<Director {self.__director_full_name}>"
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, Director):
+            return False
+        return other.__director_full_name == self.__director_full_name
+
+    def __lt__(self, other):
+        return self.__director_full_name < other.__director_full_name
+
+    def __hash__(self):
+        return hash(self.__director_full_name)
+
+class Genre:
+
+    def __init__(self, genre_name: str):
+        if genre_name == "" or type(genre_name) is not str:
+            self.__genre_name = None
+        else:
+            self.__genre_name = genre_name.strip()
+
+    @property
+    def genre_name(self) -> str:
+        return self.__genre_name
+
+    def __repr__(self):
+        return f"<Genre {self.__genre_name}>"
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, Genre):
+            return False
+        return other.__genre_name == self.__genre_name
+
+    def __lt__(self, other):
+        return self.__genre_name < other.__genre_name
+
+    def __hash__(self):
+        return hash(self.__genre_name)
+
+class Movie:
+
+    def __init__(self, rank: int, title: str, year: int):
+        if title == "" or title == None or type(title) is not str:
+            self.__rank: None
+            self.__title = None
+            self.__year = None
+            self.__description = None
+            self.__director = None
+            self.__actorList = None
+            self.__genreList = None
+            self.__runtime = None
+        if year == "" or year == None or type(year) is not int:
+            self.__rank: None
+            self.__title = None
+            self.__year = None
+            self.__description = None
+            self.__director = None
+            self.__actorList = None
+            self.__genreList = None
+            self.__runtime = None
+        else:
+            self.__rank = 0
+            #self.__title = title.strip()
+            self.__title = title
+            self.__year = year
+            self.__description = ""
+            self.__director = Director
+            self.__actorList = []
+            self.__genreList = []
+            self.__runtime = 0
+            
+    @property
+    def rank(self) -> str:
+        return self.__rank
+
+    @property
+    def title(self) -> str:
+        return self.__title
+    
+    @property
+    def year(self) -> int:
+        return self.__year
+
+    @property
+    def description(self) -> str:
+        return self.__description
+
+    @description.setter
+    def description(self, descr: str):
+        self.__description = descr.strip()
+    
+    @property
+    def director(self) -> Director:
+        return self.__director
+    
+    @director.setter
+    def director(self, director1: Director):
+        self.__director = director1
+
+    @property
+    def actors(self) -> list:
+        return self.__actorList
+
+    @actors.setter
+    def actors(self, value: Actor):
+        self.__actorList.append(value)
+
+    @property
+    def genres(self) -> list:
+        return self.__genreList
+
+    @genres.setter
+    def genres(self, value: Genre):
+        self.__genreList.append(value)
+    
+    @property
+    def runtime_minutes(self) -> int:
+        return self.__runtime
+
+    @runtime_minutes.setter
+    def runtime_minutes(self, value: int):
+        if value < 0:
+            raise ValueError
+        self.__runtime = value
+
+    def __repr__(self):
+        return f"<Movie {self.__title}, {self.__year}>"
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, Movie):
+            return False
+        return (other.__title == self.__title) and (other.__year == self.__year)
+
+    def __lt__(self, other):
+        if (other.__title == None):
+            return False
+        if (self.__title == other.__title):
+            return self.__year < other.__year
+        return self.__title < other.__title
+
+    def __hash__(self):
+        return hash(self.__title + str(self.__year))
+
+    def add_actor(self, addActor: Actor):
+        if (addActor not in self.__actorList):
+            self.__actorList.append(addActor)
+
+    def remove_actor(self, removeActor: Actor):
+        if (removeActor in self.__actorList):
+            self.__actorList.remove(removeActor)
+
+    def add_genre(self, addGenre: Genre):
+        if (addGenre not in self.__genreList):
+            self.__genreList.append(addGenre)
+
+    def remove_genre(self, removeGenre: Genre):
+        if (removeGenre in self.__genreList):
+            self.__genreList.remove(removeGenre)
 
 class ModelException(Exception):
     pass

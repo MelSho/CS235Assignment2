@@ -63,7 +63,7 @@ def login():
             # Initialise session and redirect the user to the home page.
             session.clear()
             session['username'] = user['username']
-            return redirect(url_for('home_bp.home'))
+            return redirect(url_for('movies_bp.movies_by_year'))
 
         except services.UnknownUserException:
             # Username not known to the system, set a suitable error message.
@@ -88,7 +88,7 @@ def login():
 @authentication_blueprint.route('/logout')
 def logout():
     session.clear()
-    return redirect(url_for('home_bp.home'))
+    return redirect(url_for('movies_bp.movies_by_year'))
 
 
 def login_required(view):
