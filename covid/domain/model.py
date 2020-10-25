@@ -385,6 +385,89 @@ class Movie:
         if (removeGenre in self.__genreList):
             self.__genreList.remove(removeGenre)
 
+class Review:
+    def __init__(self, movie: Movie, review_text: str, rating: int):
+        if review_text == "" or type(review_text) is not str:
+            self.__review_text = None
+        else:
+            self.__review_text = review_text.strip()
+        if type(rating) is not int:
+            self.__rating = None
+        else:
+            if rating > 10 or rating < 1:
+                self.__rating = None
+            else:
+                self.__rating = rating
+        if type(movie) is not Movie:
+            self.__movie = None
+        else:
+            self.__movie = movie
+        self.__timestamp = datetime.now()
+
+    @property
+    def review_text(self) -> str:
+        return self.__review_text
+    
+    @property
+    def rating(self) -> int:
+        return self.__rating
+    
+    @property
+    def movie(self) -> Movie:
+        return self.__movie
+    
+    @property
+    def timestamp(self) -> datetime:
+        return self.__timestamp
+
+    def __repr__(self):
+        return f"Review of {self.__movie} at {self.__timestamp}"
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, Review):
+            return False
+        return ((other.__movie == self.__movie) and (other.__review_text == self.__review_text) and (other.__rating == self.__rating) and (other.__timestamp == self.__timestamp))
+
+class WatchList:
+    def __init__(self):
+        self.__WatchList = []
+
+    @property
+    def watch_list(self) -> list:
+        return self.__WatchList
+    
+    def add_movie(self, movie: Movie):
+        if (movie not in self.__WatchList):
+            self.__WatchList.append(movie)
+    
+    def remove_movie(self, movie):
+        if (movie in self.__WatchList):
+            self.__WatchList.remove(movie)
+    
+    def select_movie_to_watch(self, index):
+        if (index >= len(self.__WatchList)):
+            return None
+        else:
+            return self.__WatchList[index]
+
+    def size(self):
+        return len(self.__WatchList)
+
+    def first_movie_in_watchlist(self):
+        if (len(self.__WatchList) == 0):
+            return None
+        else:
+            return self.__WatchList[0]
+
+    def __iter__(self):
+        return self.__WatchList.__iter__()
+
+    def __next__(self):
+        if (len(self.__WatchList) == 0):
+            raise StopIteration
+        else:
+            return self.__WatchList.pop(0)
+            
 class ModelException(Exception):
     pass
 
