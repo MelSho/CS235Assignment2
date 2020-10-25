@@ -125,6 +125,14 @@ def get_comments_for_article(article_id, repo: AbstractRepository):
 
     return comments_to_dict(article.comments)
 
+def get_entire_movies(repo: AbstractRepository):
+    movies = repo.get_movie_list()
+    return movies
+
+def get_entire_movies_cut(list1, repo: AbstractRepository):
+    movies = repo.get_movie_list_cut(list1)
+    movies_as_dict = movies_to_dict(movies)
+    return movies_as_dict
 
 # ============================================
 # Functions to convert model entities to dicts
@@ -147,7 +155,8 @@ def movie_to_dict(movie: Movie):
     movie_dict = {
         'rank': movie.rank,
         'title': movie.title,
-        'year': movie.year
+        'year': movie.year,
+        'description': movie.description
     }
     return movie_dict
 
@@ -194,5 +203,5 @@ def dict_to_article(dict):
     return article
 
 def dict_to_movie(dict):
-    movie = Movie(dict.rank, dict.title, dict.year)
+    movie = Movie(dict.rank, dict.title, dict.year, dict.description, dict.director, dict.actors, dict.genre, dict.rating)
     return movie

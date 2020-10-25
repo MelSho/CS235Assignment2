@@ -26,14 +26,14 @@ def get_genres_and_urls():
     return genre_urls
 
 
-def get_selected_articles(quantity=3):
+def get_selected_articles(quantity=10):
     articles = services.get_random_articles(quantity, repo.repo_instance)
 
     for article in articles:
         article['hyperlink'] = url_for('movies_bp.movies_by_year', date=article['date'].isoformat())
     return articles
 
-def get_selected_movies(quantity=3):
+def get_selected_movies(quantity=10):
     movies = services.get_random_movies(quantity, repo.repo_instance)
 
     for movie in movies:

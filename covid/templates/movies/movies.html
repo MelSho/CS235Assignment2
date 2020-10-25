@@ -37,7 +37,9 @@
     {% for movie in movies %}
     <article id="article">
         <h2>{{movie.title}}</h2>
+        <p>{{movie.year}}</p>
         <p>{{movie.description}}</p>
+
         <div style="float:left">
             {% for genre in movie.genres %}
             <button class="btn-general" onclick="location.href='{{ tag_urls[genre.genre_name] }}'">{{ genre.genre_name }}</button>

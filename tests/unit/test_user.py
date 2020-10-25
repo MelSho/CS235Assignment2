@@ -3,7 +3,7 @@ import pytest
 from covid.domain.model import Movie, User
 
 def test_user():
-    movie1 = Movie(0, "Harry Potter", 2010)
+    movie1 = Movie(0, "Harry Potter", 2010, "Wizards")
     movie1.runtime_minutes = 100
     assert movie1.runtime_minutes == 100
     user1 = User("Hermione Granger", "hp100")
@@ -14,7 +14,7 @@ def test_user():
     assert user1.time_spent_watching_movies_minutes == 0
 
 def test_user_watchtime():
-    movie1 = Movie(0, "Harry Potter", 2010)
+    movie1 = Movie(0, "Harry Potter", 2010, "Wizards")
     movie1.runtime_minutes = 100
     assert movie1.runtime_minutes == 100
     user1 = User("Hermione Granger", "hp100")
@@ -23,7 +23,7 @@ def test_user_watchtime():
     assert user1.time_spent_watching_movies_minutes == 100
 
 def test_user_reviews():
-    movie1 = Movie(0, "Harry Potter", 2010)
+    movie1 = Movie(0, "Harry Potter", 2010, "Wizards")
     movie1.runtime_minutes = 100
     assert movie1.runtime_minutes == 100
     user1 = User("Hermione Granger", "hp100")

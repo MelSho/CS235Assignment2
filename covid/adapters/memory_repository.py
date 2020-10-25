@@ -58,12 +58,28 @@ class MemoryRepository(AbstractRepository):
         except KeyError:
             pass
         return movie
+        
+    def get_movie_list(self):
+        movie_ranks = list()
+        for movie in self._movies:
+            movie_ranks.append(movie.rank)
+        return movie_ranks
+    
+    def get_movie_list_cut(self, list1):
+        existing_ranks = [id for id in list1 if id in self._movies_index]
+        movies = [self._movies_index[id] for id in existing_ranks]
+        return movies
 
     def get_sorted_movies_by_year(self, target_year: int) ->List[Movie]:
         target_movie = Movie(
             rank = None,
             title = None,
-            year = target_year
+            year = target_year,
+            description = None,
+            director = None,
+            actors = None,
+            genre = None,
+            rating = None
         )
         matching_movies = list()
 
@@ -297,10 +313,9 @@ def load_movies(data_path: str, repo: MemoryRepository):
     for row in read_csv_file(os.path.join(data_path, 'Data1000Movies.csv')):
         rank = row[0]
         title = row[1]
+        description = row[3]
         year = int(row[6])
-        movie = Movie(rank, title, year)
-        dataset_of_movies.append(movie)
-        repo.add_movie(movie) #
+        rating = row[8]
         actors = row[5]
         actors = actors.split(",")
         for x in range(0, len(actors)):
@@ -324,11 +339,17 @@ def load_movies(data_path: str, repo: MemoryRepository):
                 repo.add_genre(genre) #
         #print(f"Movie {index} with title: {title}, release year {release_year}")
         index += 1
-
+        movie = Movie(rank, title, year, description, director, actors, genre, rating)
+        dataset_of_movies.append(movie)
         movie = Movie(
             rank = row[0],
             title = row[1],
-            year = int(row[6])
+            year = int(row[6]),
+            description = row[3],
+            director = row[4],
+            actors = row[5],
+            genre = row[3],
+            rating = row[8]
         )
 
         repo.add_movie(movie)

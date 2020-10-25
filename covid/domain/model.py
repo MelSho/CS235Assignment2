@@ -267,7 +267,7 @@ class Genre:
 
 class Movie:
 
-    def __init__(self, rank: int, title: str, year: int):
+    def __init__(self, rank: int, title: str, year: int, description: str, director: str, actors: list, genre: list, rating: str):
         if title == "" or title == None or type(title) is not str:
             self.__rank: None
             self.__title = None
@@ -287,14 +287,15 @@ class Movie:
             self.__genreList = None
             self.__runtime = None
         else:
-            self.__rank = 0
+            self.__rank = rank
             #self.__title = title.strip()
             self.__title = title
             self.__year = year
-            self.__description = ""
-            self.__director = Director
-            self.__actorList = []
-            self.__genreList = []
+            self.__description = description
+            self.__director = director
+            self.__actorList = actors
+            self.__genreList = genre
+            self.__rating = rating
             self.__runtime = 0
             
     @property
@@ -467,7 +468,7 @@ class WatchList:
             raise StopIteration
         else:
             return self.__WatchList.pop(0)
-            
+
 class ModelException(Exception):
     pass
 
