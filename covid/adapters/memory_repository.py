@@ -140,6 +140,14 @@ class MemoryRepository(AbstractRepository):
         # Fetch the Articles.
         articles = [self._articles_index[id] for id in existing_ids]
         return articles
+    
+    def get_movies_by_rank(self, rank_list):
+        # Strip out any ids in id_list that don't represent Article ids in the repository.
+        existing_ranks = [id for id in rank_list if id in self._movies_index]
+
+        # Fetch the Articles.
+        movies = [self._movies_index[id] for id in existing_ranks]
+        return movies
 
     def get_article_ids_for_tag(self, tag_name: str):
         # Linear search, to find the first occurrence of a Tag with the name tag_name.
@@ -153,6 +161,25 @@ class MemoryRepository(AbstractRepository):
             article_ids = list()
 
         return article_ids
+    
+    def get_movie_ranks_for_genre(self, genre_name: str):
+        # iterate movies, if genre same put in list
+        movie_ranks = list()
+        for movie in self._movies:
+            if genre_name in movie.genres:
+                movie_ranks.append(movie.rank)
+        return movie_ranks
+        # Linear search, to find the first occurrence of a Tag with the name tag_name.
+        #genre = next((genre for genre in self._genres if genre.genre_name == genre_name), None)
+
+        # Retrieve the ids of articles associated with the Tag.
+        #if genre is not None:
+        #    movie_ranks = [movie.rank for movie in genre.genreList]
+        #else:
+            # No Tag with name tag_name, so return an empty list.
+        #    movie_ranks = list()
+
+        #return movie_ranks
 
     def get_year_of_previous_movie(self, movie: Movie):
         previous_year = None
@@ -208,6 +235,12 @@ class MemoryRepository(AbstractRepository):
 
         return next_date
 
+    def get_genres(self) -> List[Genre]:
+        return self._genres
+
+    def add_genre(self, genre: Genre):
+        self._genres.append(genre)
+
     def add_tag(self, tag: Tag):
         self._tags.append(tag)
 
@@ -239,9 +272,6 @@ class MemoryRepository(AbstractRepository):
     
     def add_director(self, director: Director):
         self._directors.append(director)
-    
-    def add_genre(self, genre: Genre):
-        self._genres.append(genre)
 
 
 def read_csv_file(filename: str):

@@ -34,31 +34,15 @@
             </div>
         </nav>
 
-    {% for article in articles %}
+    {% for movie in movies %}
     <article id="article">
-        <a href="{{article.hyperlink}}" target="_blank">
-            <img src={{article.image_hyperlink}} alt="article image">
-        </a>
-        <h2>{{article.title}}</h2>
-        <p>{{article.first_para}}</p>
+        <h2>{{movie.title}}</h2>
+        <p>{{movie.description}}</p>
         <div style="float:left">
-            {% for tag in article.tags %}
-            <button class="btn-general" onclick="location.href='{{ tag_urls[tag.name] }}'">{{ tag.name }}</button>
+            {% for genre in movie.genres %}
+            <button class="btn-general" onclick="location.href='{{ tag_urls[genre.genre_name] }}'">{{ genre.genre_name }}</button>
             {% endfor %}
         </div>
-        <div style="float:right">
-            {% if article.comments|length > 0 and article.id != show_comments_for_article %}
-                <button class="btn-general" onclick="location.href='{{ article.view_comment_url }}'">{{ article.comments|length }} comments</button>
-            {% endif %}
-            <button class="btn-general" onclick="location.href='{{ article.add_comment_url }}'">Comment</button>
-        </div>
-        {% if article.id == show_comments_for_article %}
-        <div style="clear:both">
-            {% for comment in article.comments %}
-                <p>{{comment.comment_text}}, by {{comment.username}}, {{comment.timestamp}}</p>
-            {% endfor %}
-        </div>
-        {% endif %}
     </article>
     {% endfor %}
     

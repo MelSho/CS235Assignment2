@@ -96,6 +96,10 @@ def get_article_ids_for_tag(tag_name, repo: AbstractRepository):
 
     return article_ids
 
+def get_movie_ranks_for_genre(genre_name, repo: AbstractRepository):
+    movie_ranks = repo.get_movie_ranks_for_genre(genre_name)
+
+    return movie_ranks
 
 def get_articles_by_id(id_list, repo: AbstractRepository):
     articles = repo.get_articles_by_id(id_list)
@@ -105,6 +109,13 @@ def get_articles_by_id(id_list, repo: AbstractRepository):
 
     return articles_as_dict
 
+def get_movies_by_rank(rank_list, repo: AbstractRepository):
+    movies = repo.get_movies_by_rank(rank_list)
+
+    # Convert Articles to dictionary form.
+    movies_as_dict = movies_to_dict(movies)
+
+    return movies_as_dict
 
 def get_comments_for_article(article_id, repo: AbstractRepository):
     article = repo.get_article(article_id)

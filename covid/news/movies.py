@@ -38,7 +38,7 @@ def movies_by_year():
         target_year = first_movie['year']
     else:
         # Convert target_date from string to date.
-        target_year = date.fromisoformat(target_year)
+        target_year = target_year
 
     #if article_to_show_comments is None:
         # No view-comments query parameter, so set to a non-existent article id.
@@ -60,9 +60,9 @@ def movies_by_year():
         # There's at least one article for the target date.
         if previous_year is not None:
             # There are articles on a previous date, so generate URLs for the 'previous' and 'first' navigation buttons.
-            prev_year_url = url_for('movies_bp.movies_by_year', year = previous_year.isoformat())
+            prev_year_url = url_for('movies_bp.movies_by_year', year = previous_year)
             #first_movie_url = url_for('movies_bp.movies_by_year', year=first_movie['year'].isoformat())
-            first_year_url = url_for('movies_bp.movies_by_year', year = first_movie['year'].isoformat())
+            first_year_url = url_for('movies_bp.movies_by_year', year = first_movie['year'])
 
         # There are articles on a subsequent date, so generate URLs for the 'next' and 'last' navigation buttons.
         if next_year is not None:
@@ -97,6 +97,7 @@ def movies_by_year():
             last_movies_url = last_year_url,
             prev_movies_url = prev_year_url,
             next_movies_url = next_year_url,
+            tag_urls = utilities.get_genres_and_urls(),
         ) 
 
     # No articles to show, so return the homepage.
@@ -104,10 +105,10 @@ def movies_by_year():
 
 @movies_blueprint.route('/movies_by_genre', methods=['GET'])
 def movies_by_genre():
-    articles_per_page = 3
+    movies_per_page = 3
 
     # Read query parameters.
-    tag_name = request.args.get('tag')
+    genre_name = request.args.get('genre')
     cursor = request.args.get('cursor')
     article_to_show_comments = request.args.get('view_comments_for')
 
@@ -126,47 +127,47 @@ def movies_by_genre():
         cursor = int(cursor)
 
     # Retrieve article ids for articles that are tagged with tag_name.
-    article_ids = services.get_article_ids_for_tag(tag_name, repo.repo_instance)
+    movie_ranks = services.get_movie_ranks_for_genre(genre_name, repo.repo_instance)
 
     # Retrieve the batch of articles to display on the Web page.
-    articles = services.get_articles_by_id(article_ids[cursor:cursor + articles_per_page], repo.repo_instance)
+    movies = services.get_movies_by_rank(movie_ranks[cursor:cursor + movies_per_page], repo.repo_instance)
 
-    first_article_url = None
-    last_article_url = None
-    next_article_url = None
-    prev_article_url = None
+    first_movie_url = None
+    last_movie_url = None
+    next_movie_url = None
+    prev_movie_url = None
 
     if cursor > 0:
         # There are preceding articles, so generate URLs for the 'previous' and 'first' navigation buttons.
-        prev_article_url = url_for('movies_bp.movies_by_genre', tag=tag_name, cursor=cursor - articles_per_page)
-        first_article_url = url_for('movies_bp.movies_by_genre', tag=tag_name)
+        prev_movie_url = url_for('movies_bp.movies_by_genre', tag=genre_name, cursor=cursor - movies_per_page)
+        first_movie_url = url_for('movies_bp.movies_by_genre', tag=genre_name)
 
-    if cursor + articles_per_page < len(article_ids):
+    if cursor + movies_per_page < len(movie_ranks):
         # There are further articles, so generate URLs for the 'next' and 'last' navigation buttons.
-        next_article_url = url_for('movies_bp.movies_by_genre', tag=tag_name, cursor=cursor + articles_per_page)
+        next_movie_url = url_for('movies_bp.movies_by_genre', tag=genre_name, cursor=cursor + movies_per_page)
 
-        last_cursor = articles_per_page * int(len(article_ids) / articles_per_page)
-        if len(article_ids) % articles_per_page == 0:
-            last_cursor -= articles_per_page
-        last_article_url = url_for('movies_bp.movies_by_genre', tag=tag_name, cursor=last_cursor)
+        last_cursor = movies_per_page * int(len(movie_ranks) / movies_per_page)
+        if len(movie_ranks) % movies_per_page == 0:
+            last_cursor -= movies_per_page
+        last_movie_url = url_for('movies_bp.movies_by_genre', tag=genre_name, cursor=last_cursor)
 
     # Construct urls for viewing article comments and adding comments.
-    for article in articles:
-        article['view_comment_url'] = url_for('movies_bp.movies_by_genre', tag=tag_name, cursor=cursor, view_comments_for=article['id'])
-        article['add_comment_url'] = url_for('movies_bp.comment_on_article', article=article['id'])
+    #for article in articles:
+    #    article['view_comment_url'] = url_for('movies_bp.movies_by_genre', tag=tag_name, cursor=cursor, view_comments_for=article['id'])
+    #    article['add_comment_url'] = url_for('movies_bp.comment_on_article', article=article['id'])
 
     # Generate the webpage to display the articles.
     return render_template(
         'movies/movies.html',
-        title='Articles',
-        articles_title='Articles tagged by ' + tag_name,
-        articles=articles,
-        selected_articles=utilities.get_selected_articles(len(articles) * 2),
-        tag_urls=utilities.get_tags_and_urls(),
-        first_article_url=first_article_url,
-        last_article_url=last_article_url,
-        prev_article_url=prev_article_url,
-        next_article_url=next_article_url,
+        title= genre_name,
+        articles_title='Movies with genre ' + genre_name,
+        articles=movies,
+        selected_articles=utilities.get_selected_movies(len(movies) * 2),
+        tag_urls=utilities.get_genres_and_urls(),
+        first_article_url=first_movie_url,
+        last_article_url=last_movie_url,
+        prev_article_url=prev_movie_url,
+        next_article_url=next_movie_url,
         show_comments_for_article=article_to_show_comments
     )
 
@@ -219,7 +220,7 @@ def comment_on_article():
         form=form,
         handler_url=url_for('movies_bp.comment_on_article'),
         selected_articles=utilities.get_selected_articles(),
-        tag_urls=utilities.get_tags_and_urls()
+        tag_urls=utilities.get_genres_and_urls()
     )
 
 
